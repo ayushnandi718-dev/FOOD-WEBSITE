@@ -16,6 +16,7 @@ const signOutBtn = document.getElementById('sign-out-btn');
 const orderHistoryBtn = document.getElementById('order-history-btn');
 
 let isLoginMode = true;
+let isGoogleSigningIn = false;
 
 const openAuthModal = (loginMode = true) => {
   isLoginMode = loginMode;
@@ -144,12 +145,17 @@ authForm.addEventListener('submit', async (e) => {
 /* ---- GOOGLE SIGN IN ---- */
 
 googleSignInBtn.addEventListener('click', async () => {
+  if (isGoogleSigningIn) return;
   if (firebaseReady && auth && provider) {
+    isGoogleSigningIn = true;
     try {
       await auth.signInWithPopup(provider);
-      closeAuthModal();
     } catch (err) {
-      alert(err.message);
+      if (err.code !== 'auth/cancelled-popup-request') {
+        console.error('Google sign-in error:', err);
+      }
+    } finally {
+      isGoogleSigningIn = false;
     }
   } else {
     alert('Google Sign-In requires Firebase. Please configure js/config.js');
